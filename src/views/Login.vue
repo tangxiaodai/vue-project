@@ -49,17 +49,20 @@ export default {
           //   说明用户输入合法，那么就可以提交
           //   发送登陆验证请求
           userlogin(this.LoginForm).then(res => {
+            // console.log(res)
             if (res.data.meta.status === 400) {
               this.$message({
                 message: res.data.meta.msg,
                 type: 'error'
               })
             } else if (res.data.meta.status === 200) {
+              // 如果登陆成功。将Token值赋值给请求头
+              localStorage.setItem('itcast_pro_token', res.data.data.token)
               this.$message({
                 message: res.data.meta.msg,
                 type: 'success'
               })
-              this.$router.push({ name: 'Index' })
+              this.$router.push({ name: 'Home' })
             }
           })
         } else {
