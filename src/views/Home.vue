@@ -1,11 +1,11 @@
 <template>
   <div class="home">
-  <el-container>
+    <el-container>
       <el-aside width="200px">
-        <img src="../assets/logo.png" alt="" class="logo">
+        <img src="../assets/logo.png" alt class="logo">
         <el-menu
-          :router='true'
-          :unique-opened='true'
+          :router="true"
+          :unique-opened="true"
           default-active="2"
           class="el-menu-vertical-demo"
           background-color="#545c64"
@@ -46,19 +46,18 @@
       </el-aside>
       <el-container>
         <el-header>
-            <span class="myicon myicon-menu toggle-btn"></span>
-            <h3 class="system-title">后台管理系统</h3>
-            <div class="welcome">
-                <span>你好：admin</span> &nbsp;&nbsp;&nbsp;
-                <a href="javascript:;">退出</a>
-            </div>
+          <span class="myicon myicon-menu toggle-btn"></span>
+          <h3 class="system-title">后台管理系统</h3>
+          <div class="welcome">
+            <span>你好：admin</span> &nbsp;&nbsp;&nbsp;
+            <a href="javascript:;">退出</a>
+          </div>
         </el-header>
         <el-main>
-            <router-view></router-view>
+          <router-view></router-view>
         </el-main>
       </el-container>
     </el-container>
-
   </div>
 </template>
 <script>
