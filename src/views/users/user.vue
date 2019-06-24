@@ -13,6 +13,7 @@
         v-model="userKey"
         class="input-with-select"
         style="width:300px;margin-right:15px"
+        @keyup.enter.native="init"
       >
         <el-button slot="append" icon="el-icon-search"></el-button>
       </el-input>
@@ -26,7 +27,12 @@
       <el-table-column prop="mobile" label="电话" width="180"></el-table-column>
       <el-table-column label="状态" width="120">
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#ff4949" @change="updateStatus(scope.row.id,scope.row.mg_state)"></el-switch>
+          <el-switch
+            v-model="scope.row.mg_state"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            @change="updateStatus(scope.row.id,scope.row.mg_state)"
+          ></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -36,10 +42,14 @@
             <el-button type="info" icon="el-icon-edit" @click="handleEdit(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="分配角色" placement="top">
-            <el-button type="success" icon="el-icon-share" @click="handleGrant(scope.row.id,scope.row.username)"></el-button>
+            <el-button
+              type="success"
+              icon="el-icon-share"
+              @click="handleGrant(scope.row)"
+            ></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top">
-            <el-button type="warning" icon="el-icon-delete"  @click="handleDel(scope.row.id)"></el-button>
+            <el-button type="warning" icon="el-icon-delete" @click="handleDel(scope.row.id)"></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -93,36 +103,43 @@
         <el-button type="primary" @click="edit">确 定</el-button>
       </div>
     </el-dialog>
-  <!-- 分配角色 -->
-  <el-dialog title="分配角色" :visible.sync="grantFormVisible">
-  <el-form :model="grantForm" :label-width="'120px'">
-    <el-form-item label="用户名" >
-      <el-input v-model="grantForm.username" auto-complete="off" disabled=""></el-input>
-    </el-form-item>
-    <template>
-  分配角色： <el-select v-model="value" placeholder="请选择" @change="getRoleId(value)">
-    <el-option
-      v-for="item in options"
-      :key="item.role_id"
-      :label="item.role_name"
-      :value="item.role_id"
-     >
-    </el-option>
-  </el-select>
-</template>
-
-  </el-form>
-  <div slot="footer" class="dialog-footer">
-    <el-button @click="grantFormVisible = false">取 消</el-button>
-    <el-button type="primary"  @click="grantConfirm">确 定</el-button>
-  </div>
-</el-dialog>
-
+    <!-- 分配角色 -->
+    <el-dialog title="分配角色" :visible.sync="grantFormVisible">
+      <el-form :model="grantForm" :label-width="'120px'">
+        <el-form-item label="用户名">
+          <el-input v-model="grantForm.username" auto-complete="off" disabled style="width:200px"></el-input>
+        </el-form-item>
+        <template>
+          <el-form-item label="用户名">
+            <el-select v-model="value" placeholder="请选择" @change="getRoleId(value)" >
+              <el-option
+                v-for="item in rolesList"
+                :key="item.id"
+                :label="item.roleName"
+                :value="item.id"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+        </template>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="grantFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="grantConfirm">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getAllList, addUser, editUser, delUser, updateUserStatus, grantUserRole } from '@/api/users.js'
+import {
+  getAllList,
+  addUser,
+  editUser,
+  delUser,
+  updateUserStatus,
+  grantUserRole
+} from '@/api/users.js'
+import { getAllRoles } from '@/api/roles.js'
 export default {
   data () {
     return {
@@ -139,26 +156,12 @@ export default {
       // 分配角色的对话框
       grantFormVisible: false,
       // 分配角色的选择框的数据
-      options: [{
-        role_id: 30,
-        role_name: '主管'
-      }, {
-        role_id: 31,
-        role_name: '测试角色'
-      }, {
-        role_id: 34,
-        role_name: '测试角色2'
-      }, {
-        role_id: 39,
-        role_name: '超级管理员'
-      }, {
-        role_id: 40,
-        role_name: 'test'
-      }],
+      rolesList: [],
       value: '',
       grantForm: {
         id: '',
         rid: '',
+        roleName: '',
         username: ''
       },
       userList: [],
@@ -204,11 +207,14 @@ export default {
   },
   methods: {
     // 分配角色
-    handleGrant (id, username) {
-      // console.log(id, username)
+    handleGrant (val) {
+      // console.log(val)
       this.grantFormVisible = true
-      this.grantForm.id = id
-      this.grantForm.username = username
+      this.grantForm.id = val.id
+      this.grantForm.roleName = val.role_name
+      this.grantForm.rid = val.rid
+      this.grantForm.username = val.username
+      this.value = val.role_name
     },
     // 分配角色——当选择栏选中后触发
     getRoleId (val) {
@@ -218,24 +224,26 @@ export default {
     },
     // 点击确定按钮调用后台接口
     grantConfirm () {
-      grantUserRole(this.grantForm.id, this.grantForm.rid).then(res => {
-        // console.log(res)
-        if (res.data.meta.status === 200) {
-          this.$message({
-            message: res.data.meta.msg,
-            type: 'success'
-          })
-          // 关闭dialog
-          this.grantFormVisible = false
-          // 重新刷新数据
-          this.init()
-        }
-      }).catch(() => {
-        this.$message({
-          message: 'error',
-          type: 'error'
+      grantUserRole(this.grantForm.id, this.grantForm.rid)
+        .then(res => {
+          // console.log(res)
+          if (res.data.meta.status === 200) {
+            this.$message({
+              message: res.data.meta.msg,
+              type: 'success'
+            })
+            // 关闭dialog
+            this.grantFormVisible = false
+            // 重新刷新数据
+            this.init()
+          }
         })
-      })
+        .catch(() => {
+          this.$message({
+            message: 'error',
+            type: 'error'
+          })
+        })
     },
 
     // 修改用户状态
@@ -258,38 +266,42 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        delUser(id).then(res => {
-          // console.log(res)
-          if (res.data.meta.status === 200) {
-            this.$message({
-              type: 'success',
-              message: res.data.meta.msg
+      })
+        .then(() => {
+          delUser(id)
+            .then(res => {
+              // console.log(res)
+              if (res.data.meta.status === 200) {
+                this.$message({
+                  type: 'success',
+                  message: res.data.meta.msg
+                })
+                // 删除成功后刷新数据
+                this.init()
+              }
             })
-            // 删除成功后刷新数据
-            this.init()
-          }
-        }).catch(() => {
+            .catch(() => {
+              this.$message({
+                type: 'error',
+                message: 'error'
+              })
+            })
+        })
+        .catch(() => {
           this.$message({
-            type: 'error',
-            message: 'error'
+            type: 'info',
+            message: '已取消删除'
           })
         })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        })
-      })
     },
 
     // 编辑用户
     edit () {
       // console.log(11)
-    // 添加校验
+      // 添加校验
       this.$refs.editUserform.validate(val => {
         if (val) {
-        // 如果信息都符合校验，调用接口将数据发送给后台
+          // 如果信息都符合校验，调用接口将数据发送给后台
           editUser(this.editUserform).then(res => {
             // console.log(res)
             if (res.data.meta.status === 200) {
@@ -379,7 +391,7 @@ export default {
     },
     // 获取用户信息
     init () {
-      getAllList({ pagenum: this.pagenum, pagesize: this.pagesize })
+      getAllList({ pagenum: this.pagenum, pagesize: this.pagesize, query: this.userKey })
         .then(res => {
           // console.log(res)
           // 将获取到的数据赋值给userList
@@ -392,8 +404,17 @@ export default {
     }
   },
   mounted () {
-    // 调用放大获取用户数据
+    // 获取用户数据
     this.init()
+    // 获取所有权限数据
+    getAllRoles()
+      .then(res => {
+        // console.log(res)
+        this.rolesList = res.data.data
+      })
+      .catch(() => {
+        console.log('err')
+      })
   }
 }
 </script>

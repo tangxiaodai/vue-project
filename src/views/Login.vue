@@ -5,10 +5,10 @@
       <el-form :model="LoginForm" :rules="rules" ref="LoginForm" class="demo-ruleForm">
         <img src="../assets/avatar.jpg" alt class="avatar">
         <el-form-item label prop="username">
-          <el-input v-model="LoginForm.username" prefix-icon="myicon myicon-user" ></el-input>
+          <el-input v-model="LoginForm.username" prefix-icon="myicon myicon-user"></el-input>
         </el-form-item>
         <el-form-item label prop="password">
-          <el-input v-model="LoginForm.password" prefix-icon="myicon myicon-key" ></el-input>
+          <el-input v-model="LoginForm.password" prefix-icon="myicon myicon-key"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" class="login-btn" @click.prevent="login">登陆</el-button>
@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { userlogin } from '@/api/users.js'
+import { userlogin } from '@/api/users.js';
 export default {
   data () {
     return {
