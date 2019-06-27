@@ -7,7 +7,7 @@
       <el-breadcrumb-item>角色列表</el-breadcrumb-item>
     </el-breadcrumb>
     <!-- 添加角色按钮 -->
-    <el-button type="success" plain>添加角色</el-button>
+    <el-button type="success" plain @click="addRoleFormVisible = true">添加角色</el-button>
     <!-- 添加表格结构 -->
     <el-table :data="roleList" style="width: 100%">
       <el-table-column type="expand">
@@ -66,7 +66,6 @@
       </el-table-column>
     </el-table>
     <!-- 分配角色弹出框 -->
-
     <el-dialog title="收货地址" :visible.sync="grantdialogFormVisible">
       <div class="grantDialog">
         <el-tree
@@ -85,18 +84,49 @@
         <el-button type="primary" @click="grantSubmit">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 添加角色弹出框 -->
+    <el-dialog title="添加新用户" :visible.sync="addRoleFormVisible">
+      <el-form :model="addRoleList" :label-width="'120px'" :rules="rules" ref="addRoleList">
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="addRoleList.roleName" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述" prop="roleDesc">
+          <el-input v-model="addRoleList.roleDesc" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addRoleFormVisible = false;$refs.addRoleList.resetFields() ">取 消</el-button>
+        <el-button type="primary" @click="addRole('addRoleList')">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
 import {
   getAllUserList,
   delUserRight,
-  grantUserRight
+  grantUserRight,
+  addRoles
 } from '@/api/roleUser.js'
 import { getRightList } from '@/api/roles.js'
 export default {
   data () {
     return {
+      rules: {
+        roleName: [
+          { required: true, message: '请输入角色名称', trigger: 'blur' }
+        ],
+        roleDesc: [
+          { required: true, message: '请输入角色描述', trigger: 'blur' }
+        ]
+      },
+      // 添加角色dialog
+      addRoleFormVisible: false,
+      // 添加角色数据
+      addRoleList: {
+        roleName: '',
+        roleDesc: ''
+      },
       // 当前授权角色的id
       roleid: '',
       // 当前角色权限列表
@@ -114,6 +144,27 @@ export default {
     }
   },
   methods: {
+    // 添加角色
+    addRole (formName) {
+      this.addRoleFormVisible = true
+      this.$refs[formName].validate(val => {
+        if (val) {
+          addRoles(this.addRoleList).then(res => {
+            // console.log(res)
+            if (res.data.meta.status === 201) {
+              this.$message({
+                message: res.data.meta.msg,
+                type: 'success'
+              })
+              this.addRoleFormVisible = false
+              this.init()
+            }
+          })
+        } else {
+          return false
+        }
+      })
+    },
     // 角色权限的设置
     showGrantDialog (row) {
       console.log(row)
@@ -200,9 +251,9 @@ export default {
     // 封装获取roles数据的方法
     init () {
       getAllUserList().then(res => {
-      // console.log(res)
+        // console.log(res)
         this.roleList = res.data.data
-      // console.log(this.roleList)
+        // console.log(this.roleList)
       })
     }
   },

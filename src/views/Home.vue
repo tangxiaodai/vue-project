@@ -12,36 +12,19 @@
           text-color="#fff"
           active-text-color="#ffd04b"
         >
-          <el-submenu index="1">
+          <el-submenu :index="item.id+''" v-for="item in menuList" :key="item.id" >
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>用户管理</span>
+              <span>{{item.authName}}</span>
             </template>
-            <el-menu-item index="/home/users">
+            <el-menu-item :index="'/home/'+secendItem.path" v-for="secendItem in item.children" :key="secendItem.id">
               <template slot="title">
                 <i class="el-icon-location"></i>
-                <span>用户列表</span>
+                <span>{{secendItem.authName}}</span>
               </template>
             </el-menu-item>
           </el-submenu>
-          <el-submenu index="2">
-            <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>权限管理</span>
-            </template>
-            <el-menu-item index="/roles">
-              <template slot="title">
-                <i class="el-icon-location"></i>
-                <span>角色列表</span>
-              </template>
-            </el-menu-item>
-            <el-menu-item index="/rights">
-              <template slot="title">
-                <i class="el-icon-location"></i>
-                <span>权限列表</span>
-              </template>
-            </el-menu-item>
-          </el-submenu>
+
         </el-menu>
       </el-aside>
       <el-container>
@@ -61,14 +44,23 @@
   </div>
 </template>
 <script>
+import { getRolesMenus } from '@/api/roles.js'
 export default {
-  methods: {
-    handleOpen (key, keyPath) {
-      console.log(key, keyPath)
-    },
-    handleClose (key, keyPath) {
-      console.log(key, keyPath)
+  data () {
+    return {
+      menuList: []
     }
+  },
+  methods: {
+  },
+  mounted () {
+    // 动态生成左侧导航
+    getRolesMenus().then(res => {
+      // console.log(res)
+      if (res.data.meta.status === 200) {
+        this.menuList = res.data.data
+      }
+    })
   }
 }
 </script>
