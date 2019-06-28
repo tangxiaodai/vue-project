@@ -7,3 +7,12 @@ export const getCategoriesList = (type) => {
     params: { type }
   })
 }
+
+// 添加商品
+export const addGoods = (data) => {
+  return axios({
+    url: 'goods',
+    method: 'post',
+    data
+  })
+}

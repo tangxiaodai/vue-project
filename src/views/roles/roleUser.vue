@@ -17,8 +17,7 @@
               <el-tag
                 closable
                 type="success"
-                @close="delRight(scope.row,first.id)"
-                v-if="first.children.length!==0"
+                @close="delStatu=0;delRight(scope.row,first.id)"
               >{{first.authName}}</el-tag>
             </el-col>
             <el-col :span="18">
@@ -27,8 +26,7 @@
                   <el-tag
                     closable
                     type="info"
-                    @close="delRight(scope.row,secend.id)"
-                    v-if="secend.children.length!==0"
+                    @close="delStatu=0;delRight(scope.row,secend.id)"
                   >{{secend.authName}}</el-tag>
                 </el-col>
                 <el-col :span="18">
@@ -37,7 +35,7 @@
                     type="info"
                     v-for="third in secend.children"
                     :key="third.id"
-                    @close="delRight(scope.row,third.id)"
+                    @close="delStatu=0;delRight(scope.row,third.id)"
                   >{{third.authName}}</el-tag>
                 </el-col>
               </el-row>
@@ -137,6 +135,8 @@ export default {
       grantList: [],
       // 默认被选中的键
       checkedArr: [],
+      // 设置删除的状态值
+      delStatu: 0,
       defaultProps: {
         children: 'children',
         label: 'authName'
@@ -235,17 +235,36 @@ export default {
     // 删除制定角色权限标签
     delRight (row, rightid) {
       // console.log(roleid, rightid)
+
       delUserRight(row.id, rightid).then(res => {
         // console.log(res)
         if (res.data.meta.status === 200) {
-          this.$message({
-            message: res.data.meta.msg,
-            type: 'success'
-          })
+          if (this.delStatu === 0) {
+            this.$message({
+              message: res.data.meta.msg,
+              type: 'success'
+            })
+            this.delStatu++
+          }
+          // console.log(this.delStatu);
           // 将获取到的返回数据data赋值给roleList，进行局部刷新
           row.children = res.data.data
           // console.log(row.children)
         }
+        let recurData = res.data.data
+        recurData.forEach(first => {
+          if (first.children.length === 0) {
+            this.delRight(row, first.id)
+          } else {
+            first.children.forEach(secend => {
+              if (secend.children.length === 0) {
+                this.delRight(row, secend.id)
+              } else {
+
+              }
+            })
+          }
+        })
       })
     },
     // 封装获取roles数据的方法
